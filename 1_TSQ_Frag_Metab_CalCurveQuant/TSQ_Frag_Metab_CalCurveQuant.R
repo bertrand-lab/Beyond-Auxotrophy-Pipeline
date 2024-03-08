@@ -4,6 +4,11 @@
   # apply quant with calibration curves
   # export final peaks and pair to cell numbers
 
+
+
+# Setup -------------------------------------------------------------------
+
+
 # Load required packages into environment
 library(ggplot2)
 library(dplyr)
@@ -446,9 +451,8 @@ incorp_LODQ <- function(molecule.name) {
 # Apply function to all analytes
 lapply(calcurve_molecules, incorp_LODQ) %>% bind_rows()
 
-# list of names of analytes
-metabs_data <- paste(calcurve_molecules, "df", sep = "_")
-metabs_data_cat <- mget(metabs_data)
+# Create df's for all molecules with a calibraion curve
+metabs_data_cat <- mget(paste(calcurve_molecules, "df", sep = "_"))
 
 # Concat all analyte's data into a single dataframe 
 metabs_data_cat <- do.call("rbind", metabs_data_cat)
@@ -458,11 +462,48 @@ write.csv(metabs_data_cat, "metabs_data_cat.csv")
 
 
 
+# Get Absolute Quant ------------------------------------------------------
+
 # Get recommended norm type
-# if >1/2 samples are below LOD, no quant
+# if >2 samples PER treatment are below LOD, no quant
 # if <1/2 samples are below LOD, relative quant 
 # If all samples above LOQ, absolute quant
 # notify if sample is below LOD
+
+reccomended_norm_df <- metabs_data_cat %>%
+    group_by(Replicate.Name, Molecule.Name, B12.Treatment) %>%
+    summarise(vote_LOD = sum(Below_LOD),
+              vote_LOQ = sum(Below_LOQ)) %>%
+    mutate(biorep_LOD = ifelse(vote_LOD < 2, FALSE, TRUE),
+           biorep_LOQ = ifelse(vote_LOQ < 2, FALSE, TRUE)) %>% # Is a biorep below the LOD
+    group_by(Molecule.Name, B12.Treatment) %>%
+    summarise(vote_LOD = sum(biorep_LOD),
+              vote_LOQ = sum(biorep_LOQ)) %>%
+    mutate(treatment_LOD = ifelse(vote_LOD < 2, FALSE, TRUE),
+           treatment_LOQ = ifelse(vote_LOQ < 2, FALSE, TRUE)) %>% # Is a treatment below the LOD
+    group_by(Molecule.Name) %>%
+    summarise(vote_LOD = sum(treatment_LOD),
+              vote_LOQ = sum(treatment_LOQ)) %>%
+    mutate(molecule_LOD = ifelse(vote_LOD < 2, FALSE, TRUE),
+           molecule_LOQ = ifelse(vote_LOQ < 2, FALSE, TRUE),
+           reccomended_norm = ifelse(molecule_LOD == FALSE & molecule_LOQ == FALSE, "abs quant", NA),
+           reccomended_norm = ifelse(molecule_LOD == FALSE & molecule_LOQ == TRUE, "rel quant", reccomended_norm),
+           reccomended_norm = ifelse(molecule_LOD == TRUE & molecule_LOQ == TRUE, "no quant", reccomended_norm)) %>%
+  dplyr::select(Molecule.Name, molecule_LOD, molecule_LOQ, reccomended_norm) %>%
+  left_join(cal_data_sum, by = "Molecule.Name") %>%
+  dplyr::select(!(Cal_amount))
+
+# Save and export 
+ write.csv(reccomended_norm_df, file = "reccomended_norm_df.csv")
+ 
+ 
+
+# FIXME write function for quant to replace following sections 
+
+
+# B1 Quant ----------------------------------------------------------------
+
+
 B1_df$normtype <- "BMIS_cell"
 B1_df$normunits <- "fmol_cell"
 
@@ -475,6 +516,7 @@ B1_df <- cbind(B1_df, B1_quant)
 B1_df$fmol_cell <- B1_df$est_fmol_on_column/B1_df$cells_on_column
 B1_df$fmol_mgC <- B1_df$est_fmol_on_column/B1_df$mgC_loaded
 B1_df$peak_cell <- B1_df$Final_Peak/B1_df$cells_on_column
+
 
 
 

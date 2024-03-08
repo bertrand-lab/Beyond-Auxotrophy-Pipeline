@@ -1,6 +1,6 @@
 # About
 
-This repository hosts a series of scripts that analyze and visualize data for the Beyond Auxotrophy project at the Bertrand Lab of marine microbial proteomics and trace nutrient biogeochemistry. For this experiment, a diatom (F. cylindrus) and bacterial isolate (Pibocella sp.) were cultured with and without the addition of vitamin B12.
+This repository hosts a series of scripts that analyze and visualize data for the Beyond Auxotrophy project at the Bertrand Lab of marine microbial proteomics and trace nutrient biogeochemistry. For this experiment, a diatom (*F. cylindrus*) and bacterial isolate (*Pibocella sp.*) were cultured with and without the addition of vitamin B~12~.
 
 # Folder Directory
 
@@ -30,3 +30,4 @@ This script performs calibrations and normalizes to heavy standards for absolute
 
 -   A list of compounds and their respective LOD/LOQ's after normalization (LODQ_export.csv)
 -   A list of all of the compounds, if they were normalized, and their R-squared value when readings were compared to the BMIS if r-squared is less than .5, no calibration is applied (rsq_metab.csv)
+-   A list of reccomnded normalization by molecule (reccomended_norm_df.csv)

@@ -1,6 +1,6 @@
 # About
 
-This repository hosts a series of scripts that analyze and visualize data for the Beyond Auxotrophy project at the Bertrand Lab of marine microbial proteomics and trace nutrient biogeochemistry. For this experiment, a diatom (*F. cylindrus*) and bacterial isolate (*Pibocella sp.*) were cultured with and without the addition of vitamin B~12~.
+This repository hosts a series of scripts that analyze and visualize data for the Beyond Auxotrophy project at the Bertrand Lab of marine microbial proteomics and trace nutrient biogeochemistry. For this experiment, a diatom (*F. cylindrus*) and bacterial isolate (*Pibocella sp.*) were cultured with and without the addition of vitamin B<sub>12</sub>.
 
 # Folder Directory
 

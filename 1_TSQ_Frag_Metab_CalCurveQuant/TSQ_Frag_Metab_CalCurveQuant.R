@@ -100,7 +100,7 @@ BMIS.Data <- read.csv("QC_BMIS_results_sum.csv") %>%
   
 
 # Join BMIS and calibration curve data
-CalCurve_BMIS <-
+CalCurve_BMIS<-
   left_join(CalCurve_cals, BMIS.Data, by = "Molecule.Name") %>%
   dplyr::select(
     # select only needed columns
@@ -533,6 +533,7 @@ lapply(quant_list, get_quant)
 metabs_data_quant <- metabs_data_cat %>% 
   dplyr::select(!(starts_with("est_fmol_on_column"))) %>%
   mutate(est_fmol_on_column = coalesce(!!!metabs_data_cat[, grepl("est_fmol_on_column", names(metabs_data_cat))])) %>%
+  mutate(est_fmol_on_column = ifelse(Below_LOD == TRUE, 0, est_fmol_on_column)) %>%
   left_join(reccomended_norm_df, by = "Molecule.Name") %>%
   mutate(fmol_cell = ifelse(reccomended_norm == "abs quant", est_fmol_on_column/cells_on_column, NA),
          fmol_mgC = ifelse(reccomended_norm == "abs quant", est_fmol_on_column/mgC_loaded, NA),

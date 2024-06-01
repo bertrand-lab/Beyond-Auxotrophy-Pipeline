@@ -9,7 +9,7 @@ library(MetBrewer)
 # Heatmap for frag quotas
 
 # Working directory 
-setwd("~/Dropbox (Bertrand Lab)/Bertrand Lab's shared workspace/Catalina/Summer_2022/1_FracyPibo_Beyond_Auxotrophy/BA_Manuscript/BA_FragPibo_Quotas_Pipeline/TSQ_Pibo_Metab_Sumdata")
+setwd("~/Bertrand Lab Dropbox/Bertrand Lab shared workspace/Catalina/Summer_2022/1_FracyPibo_Beyond_Auxotrophy/BA_Manuscript/BA_FragPibo_Quotas_Pipeline/TSQ_Pibo_Metab_Sumdata")
 
 
 
@@ -28,20 +28,6 @@ heatmap_data <- quant_data %>% # Filter for only required cols
       "DMB"
     )
   )  %>%
-  mutate(
-    Molecule.Name = replace(
-      Molecule.Name,
-      Molecule.Name == "FAMP",
-      "FAMP*"
-    )
-  ) %>%
-mutate(
-  Molecule.Name = replace(
-    Molecule.Name,
-    Molecule.Name == "Homarine",
-    "Homarine*"
-  )
-) %>%
   group_by(Molecule.Name, Treatment_Biorep) %>%
   dplyr::summarise(Area.per.cell = mean(Area.per.cell, na.rm = TRUE)) %>%
   dplyr::filter(!grepl('D', Treatment_Biorep)) %>%
@@ -55,6 +41,7 @@ palette <- rev(met.brewer("Hiroshige", n=100))
 
 # Create label vector
 labvec <- c(NA, expression("+B"[12]), NA, NA,expression("-B"[12]),  NA)
+labvec_rows <- c(expression("B"[6]), "FAMP*", expression("B"[5]), expression("B"[1]), "Niacin", "HET", "Homarine*", expression("B"[2]), "DMB") 
 
 setwd("../4_TSQ_Pibo_Metab_Heatmap")
 
@@ -68,7 +55,9 @@ heatmap.2(heatmap_data,
           density = "none", # remove density label
           col = palette, # colors
           labCol = labvec,
+          labRow = labvec_rows,
           cexCol = 2,
+          cexRow = 2,
           srtCol = 0,
           adjCol = .5,
           scale = "row", # calculate z scores by row
@@ -126,7 +115,7 @@ FAMP_plot <- ggplot(data = FAMP_plot_data,
   geom_point(stat = "identity",
              size = 10,
              color = "darkgrey") +
-  ylab(expression(paste("Mean Peak Area Cell" ^ "-1" ~ "FAMP"))) +
+  ylab(expression(paste("Mean FAMP Peak Area Cell" ^ "-1"))) +
   xlab("Treatment") + 
   theme_classic() +
   theme(
@@ -134,8 +123,8 @@ FAMP_plot <- ggplot(data = FAMP_plot_data,
   ) +
   ylim(0,0.040) +
   geom_signif(comparisons = list(c("+", "-")),
+              annotations = "0.080",
               y_position = .034,
-              annotation = ".",
               textsize = 10)
 
 Homarine_plot_data <- ttest_df %>%
@@ -162,12 +151,15 @@ Homarine_plot <- ggplot(data = Homarine_plot_data,
   theme_classic() +
   theme(
     text = element_text(size = 23, color = "black")
-  ) 
+  ) + 
    ylim(0,0.00030) +
   geom_signif(comparisons = list(c("+", "-")),
-              map_signif_level = TRUE, 
+              map_signif_level = FALSE, 
                y_position = .00028,
-              test = "t.test")
+              test = "t.test",
+              textsize = 10) + 
+  scale_x_discrete(labels = c("+" = expression("+B"[12]),
+                              "-" = expression("-B"[12])))
 
 
 Homarine_plot_zeptomoles_cell <- ggplot(data = Homarine_plot_data,
@@ -176,7 +168,7 @@ Homarine_plot_zeptomoles_cell <- ggplot(data = Homarine_plot_data,
   geom_point(stat = "identity",
              size = 10,
              color = "darkgrey") +
-  ylab(expression(paste("Zeptomoles Cell" ^ "-1" ~ "Homarine"))) +
+  ylab(expression(paste("Zeptomoles Homarine Cell" ^ "-1"))) +
   xlab("Treatment") + 
   theme_classic() +
   theme(
@@ -184,12 +176,19 @@ Homarine_plot_zeptomoles_cell <- ggplot(data = Homarine_plot_data,
   ) +
   ylim(0,10) +
   geom_signif(comparisons = list(c("+", "-")),
-              annotations = "*",
               textsize = 10,
-              y_position = 8.5)
+              y_position = 8.5,
+              annotations = " 0.032") + 
+  scale_x_discrete(labels = c("+" = expression("+B"[12]),
+                              "-" = expression("-B"[12])))
 
+
+# Open a pdf file
+pdf("Pibo_faceted_metab.pdf", width = 12, height = 6.5) 
 
 ggarrange(Homarine_plot_zeptomoles_cell, FAMP_plot) 
+
+dev.off()
 
 
 

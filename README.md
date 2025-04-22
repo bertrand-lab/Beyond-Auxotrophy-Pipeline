@@ -1,12 +1,12 @@
 # About
 
-This repository hosts a series of scripts that analyze and visualize data for the Beyond Auxotrophy project at the Bertrand Lab of marine microbial proteomics and trace nutrient biogeochemistry. For this experiment, a diatom (*F. cylindrus*) and bacterial isolate (*Pibocella sp.*) were cultured with and without the addition of vitamin B<sub>12</sub>.
+This repository hosts a series of scripts that analyze and visualize data for the Beyond Auxotrophy project at the Bertrand Lab of marine microbial proteomics and trace nutrient biogeochemistry. For this experiment, a diatom (*F. cylindrus*) were cultured with and without the addition of vitamin B<sub>12</sub>. Through targeted mass spectrometry, we investigate the intracellular concentrations of a suite of metabolites when the facultative cobalamin consumer is grown with and without cobalamin
 
 # Folder Directory
 
 ## 0_TSQ_Frag_Metab_BMIS
 
-This script uses the quality control (QC) samples to choose a best matched internal standard (BMIS). When normalized to it's BMIS, a metabolite's coefficient of variation in the QC samples injected throughout the course of the run is decreased by at least 30%.
+This script in this folder, [TSQ_Frag_Metab_BMIS.R](https://github.com/bertrand-lab/Beyond-Auxotrophy-Pipeline/blob/main/0_TSQ_Frag_Metab_BMIS/TSQ_Frag_Metab_BMIS) uses the quality control (QC) samples to choose a best matched internal standard (BMIS). When normalized to it's BMIS, a metabolite's coefficient of variation in the QC samples injected throughout the course of the run is decreased by at least 30%.
 
 ### Inputs:
 
@@ -18,7 +18,7 @@ This script uses the quality control (QC) samples to choose a best matched inter
 
 ## 1_TSQ_Frag_Metab_CalCurveQuant
 
-This script performs calibrations and normalizes to heavy standards for absolute quantification. It computes limits of detection and quantification for each compound. Finally, it filters for only metabolites which can be quantified (either relative quantification in the form of peak per cell or absolute quantitication in moles per cell).
+[TSQ_Frag_Metab_CalCurveQuant.R](https://github.com/bertrand-lab/Beyond-Auxotrophy-Pipeline/blob/main/1_TSQ_Frag_Metab_CalCurveQuant/TSQ_Frag_Metab_CalCurveQuant.R) performs calibrations and normalizes to heavy standards for absolute quantification. It computes limits of detection and quantification for each compound. Finally, it filters for only metabolites which can be quantified (either relative quantification in the form of peak per cell or absolute quantification in moles per cell).
 
 ### Inputs:
 
@@ -30,4 +30,6 @@ This script performs calibrations and normalizes to heavy standards for absolute
 
 -   A list of compounds and their respective LOD/LOQ's after normalization (LODQ_export.csv)
 -   A list of all of the compounds, if they were normalized, and their R-squared value when readings were compared to the BMIS if r-squared is less than .5, no calibration is applied (rsq_metab.csv)
--   A list of reccomnded normalization by molecule (reccomended_norm_df.csv)
+-   A list of recommended normalization by molecule (recommended_norm_df.csv)
+
+

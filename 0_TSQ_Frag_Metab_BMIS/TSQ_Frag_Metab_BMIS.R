@@ -14,7 +14,7 @@ library(here)
 
 # load QC data and only include QC treatments
 QC.Data <-
-  read.csv(here("0_TSQ_Frag_Metab_BMIS", "ER3_149_Frag_Catalina_01_Cal03022022_output.csv")) |> filter(grepl("QC", Replicate.Name)) |> 
+  read.csv(here("TSQ_Frag_Metab_RAW", "ER3_149_Frag_Catalina_01_Cal03022022_output.csv")) |> filter(grepl("QC", Replicate.Name)) |> 
   
   
   mutate(Replicate.Name = factor(
@@ -268,12 +268,10 @@ QC_Norm_Export <- apply(QC_Norm_Export,2,as.character)
 QC_Norm_Export_Sum <- apply(QC_Norm_Export_Sum,2,as.character)
 
 
-# Change wd
-setwd("../0_TSQ_Frag_Metab_BMIS")
 
 # Export results and summary from BMIS analysis
-write.csv(QC_Norm_Export, file = "QC_BMIS_results.csv")
-write.csv(QC_Norm_Export_Sum, file = "QC_BMIS_results_sum.csv")
+write.csv(QC_Norm_Export, file = here("0_TSQ_Frag_Metab_BMIS","QC_BMIS_results.csv"))
+write.csv(QC_Norm_Export_Sum, file = here("0_TSQ_Frag_Metab_BMIS","QC_BMIS_results_sum.csv"))
 
 # Create a table from export
 grid.table(QC_Norm_Export_Sum)

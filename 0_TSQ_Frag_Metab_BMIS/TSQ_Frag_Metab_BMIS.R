@@ -1,26 +1,26 @@
 # This script is for deciding on best matched internal standards (BMIS) in quality control (QC) samples run on TSQ for Global Metabolite F. cylindrus experiment 
 
 # Load required packages into environment
-library(ggplot2)
-library(dplyr)
+library(tidyverse)
 library(raster)
 library(MetBrewer)
 library(gridExtra)
-library(tidyr)
+library(here)
 
-# set working directory 
-setwd("~/Dropbox (Bertrand Lab)/Bertrand Lab's shared workspace/Catalina/Summer_2022/1_FracyPibo_Beyond_Auxotrophy/BA_Manuscript/BA_FragPibo_Quotas_Pipeline/TSQ_Frag_Metab_RAW")
+
+
+# Setup -------------------------------------------------------------------
 
 
 # load QC data and only include QC treatments
 QC.Data <-
-  read.csv("ER3_149_Frag_Catalina_01_Cal03022022_output.csv") %>% filter(grepl("QC", Replicate.Name))
-
-
-# Plot QC peaks per compound
-QC.Data$Replicate.Name <-
-  factor(
-    QC.Data$Replicate.Name,
+  read.csv(here("0_TSQ_Frag_Metab_BMIS", "ER3_149_Frag_Catalina_01_Cal03022022_output.csv")) |> filter(grepl("QC", Replicate.Name)) |> 
+  
+  
+  mutate(Replicate.Name = factor(
+    Replicate.Name,
+    
+    # set order of levels by QC number
     levels = c(
       "ER3_149_2fdQC_03",
       "ER3_149_2fdQC_04" ,
@@ -31,34 +31,42 @@ QC.Data$Replicate.Name <-
       "ER3_149_2fdQC_114",
       "ER3_149_2fdQC_142"
     )
-  )
-
-# Fix DMB name 
-QC.Data <- QC.Data %>% 
+  )) |> 
+  
+  # abbreviate DMB name
   mutate(Molecule.Name = replace(Molecule.Name, Molecule.Name == "Dimethyl-benzimidazole (DMB)", "DMB"))
 
-QC.Peaks <- ggplot() + 
-  geom_bar(data = QC.Data, aes(y = Total.Area, x = Replicate.Name), stat = "identity") + 
-  ggtitle("QC Peak Areas (No Normalization)") + 
+# Plot QC peaks
+QC.Peaks <- ggplot() +
+  geom_bar(data = QC.Data,
+           aes(y = Total.Area, x = Replicate.Name),
+           stat = "identity") +
+  ggtitle("QC Peak Areas (No Normalization)") +
   ylab("Peak Area") +
   xlab("QC Injection") +
-  facet_wrap( ~ Molecule.Name, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90,   hjust = 1)) + 
-  scale_x_discrete(breaks = levels(QC.Data$Replicate.Name), 
-                   labels=c("03", "04", "08", "09", "44", "79", "114", "142" ))
-  
+  facet_wrap(~ Molecule.Name, scales = "free") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_x_discrete(
+    breaks = levels(QC.Data$Replicate.Name),
+    labels = c("03", "04", "08", "09", "44", "79", "114", "142")
+  )
+
 
 # Get mean, standard deviation, and cv of all QC's per compound
-QC.Data.SumStats <- QC.Data %>%
-  group_by(Molecule.Name) %>%
-  dplyr::summarise(Mean.Peak.Area = mean(Total.Area), SD.Peak.Area = sd(Total.Area), CV.Peak.Area = raster::cv(Total.Area))
-
+QC.Data.SumStats <- QC.Data |>
+  group_by(Molecule.Name) |>
+  dplyr::summarise(
+    Mean.Peak.Area = mean(Total.Area),
+    SD.Peak.Area = sd(Total.Area),
+    CV.Peak.Area = raster::cv(Total.Area)
+  )
 
 
 # Get Normalized Peaks (divide each light QC by each heavy QC) ------------
 
 # Create df with only non-heavy entries
-BMIS.Data <- QC.Data %>% filter(!grepl('heavy', Molecule.Name))
+BMIS.Data <- QC.Data |> 
+  filter(!grepl('heavy', Molecule.Name))
 
 # Create a list of heavy compounds to normalize to
 heavy_compounds <- c("B1", "B2", "B12-CN", "B7")
@@ -67,7 +75,8 @@ heavy_compounds <- c("B1", "B2", "B12-CN", "B7")
 norm_peaks <- function(compound_name) {
   
   # Index for heavy compound from QC data
-  heavy <- QC.Data %>% filter(Molecule.Name == paste(compound_name, "-heavy", sep = ""))
+  heavy <- QC.Data |> 
+    filter(Molecule.Name == paste(compound_name, "-heavy", sep = ""))
   
   # Amend areas of the heavy compound to the CalCurve_cals df
   BMIS.Data[paste("Heavy", compound_name, "Peaks", sep = ".")] <-
@@ -90,8 +99,8 @@ lapply(heavy_compounds, norm_peaks)
 # Compare Heavy-Normalized QC to non-normed QC ----------------------------
 
 # Get summary stats for heavy compound normalization (sd and cv)
-HeavyNormQC.Data.SumStats <- BMIS.Data %>%
-  group_by(Molecule.Name) %>%
+HeavyNormQC.Data.SumStats <- BMIS.Data |>
+  group_by(Molecule.Name) |>
   dplyr::summarise(
     Mean.Peak.Area = mean(Total.Area),
     SD.Peak.Area = sd(Total.Area),
@@ -113,7 +122,7 @@ HeavyNormQC.Data.SumStats <- BMIS.Data %>%
 
 # Compare CV's per compound and normalization type -------------------------------
 HeavyNormQC.Data.SumStats1 <-
-  HeavyNormQC.Data.SumStats %>% dplyr::select(
+  HeavyNormQC.Data.SumStats |> dplyr::select(
     Molecule.Name,
     CV.Peak.Area,
     CV.Peak.Area.B1.Norm,
@@ -173,7 +182,7 @@ lapply(heavy_compounds, calc_deltas)
 
 # create a list of highest changes and which heavy standard norm led to them
 HeavyNormQC.Data.SumStats.deltaCV <-
-  HeavyNormQC.Data.SumStats %>%
+  HeavyNormQC.Data.SumStats |>
   dplyr::select(B1, B2, `B12-CN`, B7)
   
 # Pull largest cv's
@@ -228,7 +237,7 @@ HeavyNormQC.Data.BMIS <- rbind(HeavyNormQC.Data.BMIS.corresp, HeavyNormQC.Data.B
 
 # Create dataframe for exporting df's
 QC_Norm_Export <-
-  HeavyNormQC.Data.BMIS %>% dplyr::select(
+  HeavyNormQC.Data.BMIS |> dplyr::select(
     Molecule.Name,
     Mean.Peak.Area,
     SD.Peak.Area,
@@ -252,7 +261,7 @@ QC_Norm_Export <-
   )
 
 QC_Norm_Export_Sum <-
-  QC_Norm_Export %>% dplyr::select(Molecule.Name, BMIS, deltaCV, BMIS_used, Final.BMIS.Norm.Peak)
+  QC_Norm_Export |> dplyr::select(Molecule.Name, BMIS, deltaCV, BMIS_used, Final.BMIS.Norm.Peak)
 
 # Fix weird encoding error
 QC_Norm_Export <- apply(QC_Norm_Export,2,as.character)
@@ -272,7 +281,7 @@ grid.table(QC_Norm_Export_Sum)
 # Plot QC's before and after normalization for those that get a normalization
 
 # Get before and after CV's
-QC_norm_comp_df <- HeavyNormQC.Data.BMIS %>% filter(BMIS_used != "none") %>% dplyr::select(Molecule.Name, CV.Peak.Area, deltaCV) 
+QC_norm_comp_df <- HeavyNormQC.Data.BMIS |> filter(BMIS_used != "none") |> dplyr::select(Molecule.Name, CV.Peak.Area, deltaCV) 
 
 # get columns for before and after normalization
 QC_norm_comp_df$After_norm <- QC_norm_comp_df$CV.Peak.Area - QC_norm_comp_df$deltaCV
@@ -280,13 +289,13 @@ QC_norm_comp_df$After_norm <- QC_norm_comp_df$CV.Peak.Area - QC_norm_comp_df$del
 # change to long form data with pivot (note: use of amend gather above)
 colnames(QC_norm_comp_df)[c(2,4)] <- c("Before Normalization", "After Normalization") 
 
-QC_norm_comp_df <- QC_norm_comp_df %>% dplyr::select(Molecule.Name, "Before Normalization", "After Normalization")
+QC_norm_comp_df <- QC_norm_comp_df |> dplyr::select(Molecule.Name, "Before Normalization", "After Normalization")
 
-HeavyNormQC.Data.Comp <- QC_norm_comp_df %>%
+HeavyNormQC.Data.Comp <- QC_norm_comp_df |>
   pivot_longer(!Molecule.Name, names_to = "Norm", values_to = "CV")
 
 # filter out methinonine (cv too high)
-HeavyNormQC.Data.Comp<- HeavyNormQC.Data.Comp %>% dplyr::filter(Molecule.Name != "Methionine")
+HeavyNormQC.Data.Comp<- HeavyNormQC.Data.Comp |> dplyr::filter(Molecule.Name != "Methionine")
 
 
 HeavyNormQC.Data.Comp$Norm <- factor(HeavyNormQC.Data.Comp$Norm, levels = c("Before Normalization", "After Normalization") )

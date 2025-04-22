@@ -137,7 +137,7 @@ LODQ_df <- CalCurve_BMIS |>
 LODQ_df <- LODQ_df[ LODQ_df$Molecule.Name %in% cal_data_sum$Molecule.Name, ]
 
 # Export list of LOQ/D
-write.csv(LODQ_df, file = "LODQ_export.csv")
+write.csv(LODQ_df, file = here("1_TSQ_Frag_Metab_CalCurveQuant", "LODQ_export.csv"))
 
 # Remove entries that don't have calibration curves
 cal_data_sum <- filter(cal_data_sum, Cal_done == "Y") 
@@ -474,7 +474,7 @@ reccomended_norm_df <- metabs_data_cat |>
   dplyr::select(!(Cal_amount))
 
 # Save and export 
- write.csv(reccomended_norm_df, file = here("1_TSQ_Frag_Metav_CalCurveQuant", "reccomended_norm_df.csv"))
+ write.csv(reccomended_norm_df, file = here("1_TSQ_Frag_Metab_CalCurveQuant", "reccomended_norm_df.csv"))
  
  # Add back reccomneded norm info to df 
  quant_df <- left_join(metabs_data_cat, reccomended_norm_df, by= "Molecule.Name") |>

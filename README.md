@@ -6,7 +6,7 @@ This repository hosts a series of scripts that analyze and visualize data for th
 
 ## 0_TSQ_Frag_Metab_BMIS
 
-This script in this folder, [TSQ_Frag_Metab_BMIS.R](0_TSQ_Frag_Metab_BMIS/TSQ_Frag_Metab_BMIS) uses the quality control (QC) samples to choose a best matched internal standard (BMIS). When normalized to it's BMIS, a metabolite's coefficient of variation in the QC samples injected throughout the course of the run is decreased by at least 30%.
+This script in this folder, [TSQ_Frag_Metab_BMIS.R](0_TSQ_Frag_Metab_BMIS/TSQ_Frag_Metab_BMIS.R) uses the quality control (QC) samples to choose a best matched internal standard (BMIS). When normalized to it's BMIS, a metabolite's coefficient of variation in the QC samples injected throughout the course of the run is decreased by at least 30%.
 
 
 ### Inputs:
